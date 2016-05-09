@@ -74,16 +74,26 @@ rbpcap_s_lookupdev(VALUE self)
 #if defined(WIN32)  /* pcap_lookupdev is broken on windows */
   pcap_if_t *alldevs;
   pcap_if_t *d;
+  pcap_if_t *potentialdev;
 
+  printf( "IN RBPCAP_S_LOOKUPDEV\n" );
+  fflush(stdout);
+  printf( "Function reference %016x\n", pcap_findalldevs);
+  fflush(stdout);
   /* Retrieve the device list from the local machine */
   if (pcap_findalldevs(&alldevs,eb) == -1) {
+	  printf( "GOT ERROR LOOKING UP ALL DEVS\n" );
+	  fflush(stdout);
       rb_raise(eBindingError,"%s",eb);
   }
+  
+  printf( "EB: \n", eb );
+  fflush(stdout);
 
   /* Find the first interface with an address and not loopback */
-  for(d = alldevs; d != NULL; d= d->next)  {
-      if(d->name && d->addresses && !(d->flags & PCAP_IF_LOOPBACK)) {
-          dev=d->name;
+  for(d = alldevs; d != NULL; potentialdev = d->next)  {
+      if(potentialdev->name && potentialdev->addresses && !(potentialdev->flags & PCAP_IF_LOOPBACK)) {
+          dev=potentialdev->name;
           break;
       }
   }
@@ -1264,6 +1274,7 @@ rbpcap_thread_wait_handle(HANDLE fno)
 void
 Init_pcaprub_c()
 {
+  printf( "IN INIT PCAP RUB C\n" );
   /*
   * Document-class: Pcap
   *
@@ -1396,5 +1407,5 @@ Init_pcaprub_c()
   */
   rb_define_method(rb_cPkt, "to_s", rbpacket_data, 0);
 
-
+  printf( "EXITING INIT PCAP RUB C\n" );
 }
